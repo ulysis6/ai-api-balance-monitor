@@ -6,3 +6,5 @@ __pycache__/
 *.pyo
 .env
 *.egg-info/
+scripts/generate_license.py
+scripts/licenses_*.txt
