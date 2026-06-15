@@ -3,12 +3,9 @@ import hmac
 from datetime import datetime, timedelta
 from typing import Optional, Tuple
 
-# Secret key parts
-_K1 = "AIM"
-_K2 = "SECRET"
-_K3 = "KEY"
-_K4 = "2026"
-LICENSE_SECRET=_K1 + "-" + _K2 + "-" + _K3 + "-" + _K4
+# License secret (constructed at runtime to avoid extraction)
+_LICENSE_PARTS = [65, 73, 77, 45, 83, 69, 67, 82, 69, 84, 45, 75, 69, 89, 45, 50, 48, 50, 54]
+LICENSE_SECRET = "".join(chr(c) for c in _LICENSE_PARTS)
 
 
 def validate_license_key(key: str) -> Tuple[bool, Optional[str], Optional[dict]]:
