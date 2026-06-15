@@ -53,6 +53,14 @@ jobs:
             mv "run.app" "AI余额监控.app"
           fi
 
+      - name: Ad-hoc code sign
+        run: |
+          codesign --force --deep --sign - "dist/AI余额监控.app"
+
+      - name: Remove quarantine attribute
+        run: |
+          xattr -cr "dist/AI余额监控.app"
+
       - name: Create DMG
         run: |
           brew install create-dmg || true
