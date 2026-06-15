@@ -1,0 +1,6 @@
+# AI模型API余额监控 v2.0
+# Python 依赖
+
+PyQt5>=5.15.0
+requests>=2.28.0
+pyinstaller>=5.0.0

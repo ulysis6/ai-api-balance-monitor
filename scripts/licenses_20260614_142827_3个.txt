@@ -1,0 +1,20 @@
+============================================================
+AI模型API余额监控 - License Keys
+生成时间: 2026-06-14 14:28:27
+生成数量: 3 个
+============================================================
+
+[1] AIM-eyJkYXlzIjogMzAsICJ0eXBlIjogInBybyIsICJ1aWQiOiAiZDU4ZjQ1MTciLCAidiI6IDF9-52628e7b
+    类型: pro
+    有效期: 30天 (从激活日开始)
+
+[2] AIM-eyJkYXlzIjogMzAsICJ0eXBlIjogInBybyIsICJ1aWQiOiAiYmNlZWVlZWYiLCAidiI6IDF9-c5525f6c
+    类型: pro
+    有效期: 30天 (从激活日开始)
+
+[3] AIM-eyJkYXlzIjogMzAsICJ0eXBlIjogInBybyIsICJ1aWQiOiAiOGVkZjVkOTAiLCAidiI6IDF9-5f7abcf0
+    类型: pro
+    有效期: 30天 (从激活日开始)
+
+============================================================
+注意: 有效期从用户激活日期开始计算

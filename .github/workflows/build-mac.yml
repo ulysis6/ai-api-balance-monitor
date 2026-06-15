@@ -1,0 +1,73 @@
+name: Build Mac DMG
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  build-mac:
+    runs-on: macos-latest
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pyinstaller PyQt5 requests
+
+      - name: Build Mac App
+        run: |
+          python -m PyInstaller \
+            --noconfirm \
+            --onedir \
+            --windowed \
+            --name "AI余额监控" \
+            --add-data "src:src" \
+            --hidden-import PyQt5 \
+            --hidden-import PyQt5.QtWidgets \
+            --hidden-import PyQt5.QtCore \
+            --hidden-import PyQt5.QtGui \
+            --hidden-import requests \
+            src/main.py
+
+      - name: Create DMG
+        run: |
+          # 创建 DMG
+          brew install create-dmg || true
+          create-dmg \
+            --volname "AI余额监控" \
+            --window-pos 200 120 \
+            --window-size 600 400 \
+            --icon-size 100 \
+            --icon "AI余额监控.app" 175 190 \
+            --hide-extension "AI余额监控.app" \
+            --app-drop-link 425 190 \
+            "dist/AI余额监控.dmg" \
+            "dist/AI余额监控.app" || \
+          # 如果 create-dmg 不可用，直接压缩
+          cd dist && zip -r "AI余额监控-mac.zip" "AI余额监控.app"
+
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: AI余额监控-mac
+          path: |
+            dist/*.dmg
+            dist/*.zip
+
+      - name: Release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            dist/*.dmg
+            dist/*.zip
