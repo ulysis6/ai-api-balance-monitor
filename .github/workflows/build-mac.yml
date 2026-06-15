@@ -37,12 +37,24 @@ jobs:
             --hidden-import PyQt5.QtCore \
             --hidden-import PyQt5.QtGui \
             --hidden-import requests \
-            src/main.py
+            run.py
+
+      - name: Rename executable
+        run: |
+          cd dist
+          if [ -d "run" ]; then
+            mv "run" "AI余额监控"
+          fi
+          if [ -f "run.app" ]; then
+            mv "run.app" "AI余额监控.app"
+          elif [ -d "run.app" ]; then
+            mv "run.app" "AI余额监控.app"
+          fi
 
       - name: Create DMG
         run: |
-          # 创建 DMG
           brew install create-dmg || true
+          cd dist
           create-dmg \
             --volname "AI余额监控" \
             --window-pos 200 120 \
@@ -51,10 +63,9 @@ jobs:
             --icon "AI余额监控.app" 175 190 \
             --hide-extension "AI余额监控.app" \
             --app-drop-link 425 190 \
-            "dist/AI余额监控.dmg" \
-            "dist/AI余额监控.app" || \
-          # 如果 create-dmg 不可用，直接压缩
-          cd dist && zip -r "AI余额监控-mac.zip" "AI余额监控.app"
+            "AI余额监控.dmg" \
+            "AI余额监控.app" || \
+          zip -r "AI余额监控-mac.zip" "AI余额监控.app"
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
