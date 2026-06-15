@@ -7,19 +7,10 @@ on:
   workflow_dispatch:
 
 jobs:
-  build-mac:
+  build-mac-intel:
+    runs-on: macos-13
     permissions:
       contents: write
-    strategy:
-      matrix:
-        include:
-          - os: macos-13
-            arch: intel
-            suffix: -mac-intel
-          - os: macos-14
-            arch: apple-silicon
-            suffix: -mac-arm64
-    runs-on: ${{ matrix.os }}
     env:
       MACOSX_DEPLOYMENT_TARGET: "12.0"
     
@@ -53,31 +44,18 @@ jobs:
             --hidden-import requests \
             run.py
 
-      - name: Rename executable
+      - name: Rename and sign
         run: |
           cd dist
-          if [ -d "run" ]; then
-            mv "run" "AI余额监控"
-          fi
-          if [ -f "run.app" ]; then
-            mv "run.app" "AI余额监控.app"
-          elif [ -d "run.app" ]; then
-            mv "run.app" "AI余额监控.app"
-          fi
-
-      - name: Ad-hoc code sign
-        run: |
-          codesign --force --deep --sign - "dist/AI余额监控.app"
-
-      - name: Remove quarantine attribute
-        run: |
-          xattr -cr "dist/AI余额监控.app"
+          if [ -d "run" ]; then mv "run" "AI余额监控"; fi
+          if [ -f "run.app" ]; then mv "run.app" "AI余额监控.app"; elif [ -d "run.app" ]; then mv "run.app" "AI余额监控.app"; fi
+          codesign --force --deep --sign - "AI余额监控.app"
+          xattr -cr "AI余额监控.app"
 
       - name: Create DMG
         run: |
           brew install create-dmg || true
           cd dist
-          DMG_NAME="AI余额监控${{ matrix.suffix }}.dmg"
           create-dmg \
             --volname "AI余额监控" \
             --window-pos 200 120 \
@@ -86,15 +64,91 @@ jobs:
             --icon "AI余额监控.app" 175 190 \
             --hide-extension "AI余额监控.app" \
             --app-drop-link 425 190 \
-            "$DMG_NAME" \
+            "AI余额监控-mac-intel.dmg" \
             "AI余额监控.app" || \
-          ZIP_NAME="AI余额监控${{ matrix.suffix }}.zip"
-          zip -r "$ZIP_NAME" "AI余额监控.app"
+          zip -r "AI余额监控-mac-intel.zip" "AI余额监控.app"
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: AI余额监控${{ matrix.suffix }}
+          name: AI余额监控-mac-intel
+          path: |
+            dist/*.dmg
+            dist/*.zip
+
+      - name: Release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            dist/*.dmg
+            dist/*.zip
+
+  build-mac-arm64:
+    runs-on: macos-14
+    permissions:
+      contents: write
+    env:
+      MACOSX_DEPLOYMENT_TARGET: "13.0"
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pyinstaller PyQt5 requests
+
+      - name: Build Mac App
+        run: |
+          python -m PyInstaller \
+            --noconfirm \
+            --onedir \
+            --windowed \
+            --osx-bundle-identifier "com.ulysis.aimonitor" \
+            --name "AI余额监控" \
+            --add-data "src:src" \
+            --hidden-import PyQt5 \
+            --hidden-import PyQt5.QtWidgets \
+            --hidden-import PyQt5.QtCore \
+            --hidden-import PyQt5.QtGui \
+            --hidden-import requests \
+            run.py
+
+      - name: Rename and sign
+        run: |
+          cd dist
+          if [ -d "run" ]; then mv "run" "AI余额监控"; fi
+          if [ -f "run.app" ]; then mv "run.app" "AI余额监控.app"; elif [ -d "run.app" ]; then mv "run.app" "AI余额监控.app"; fi
+          codesign --force --deep --sign - "AI余额监控.app"
+          xattr -cr "AI余额监控.app"
+
+      - name: Create DMG
+        run: |
+          brew install create-dmg || true
+          cd dist
+          create-dmg \
+            --volname "AI余额监控" \
+            --window-pos 200 120 \
+            --window-size 600 400 \
+            --icon-size 100 \
+            --icon "AI余额监控.app" 175 190 \
+            --hide-extension "AI余额监控.app" \
+            --app-drop-link 425 190 \
+            "AI余额监控-mac-arm64.dmg" \
+            "AI余额监控.app" || \
+          zip -r "AI余额监控-mac-arm64.zip" "AI余额监控.app"
+
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: AI余额监控-mac-arm64
           path: |
             dist/*.dmg
             dist/*.zip
