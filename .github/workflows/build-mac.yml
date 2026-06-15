@@ -8,9 +8,18 @@ on:
 
 jobs:
   build-mac:
-    runs-on: macos-latest
     permissions:
       contents: write
+    strategy:
+      matrix:
+        include:
+          - os: macos-13
+            arch: intel
+            suffix: -mac-intel
+          - os: macos-14
+            arch: apple-silicon
+            suffix: -mac-arm64
+    runs-on: ${{ matrix.os }}
     
     steps:
       - name: Checkout
@@ -65,6 +74,7 @@ jobs:
         run: |
           brew install create-dmg || true
           cd dist
+          DMG_NAME="AI余额监控${{ matrix.suffix }}.dmg"
           create-dmg \
             --volname "AI余额监控" \
             --window-pos 200 120 \
@@ -73,14 +83,15 @@ jobs:
             --icon "AI余额监控.app" 175 190 \
             --hide-extension "AI余额监控.app" \
             --app-drop-link 425 190 \
-            "AI余额监控.dmg" \
+            "$DMG_NAME" \
             "AI余额监控.app" || \
-          zip -r "AI余额监控-mac.zip" "AI余额监控.app"
+          ZIP_NAME="AI余额监控${{ matrix.suffix }}.zip"
+          zip -r "$ZIP_NAME" "AI余额监控.app"
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: AI余额监控-mac
+          name: AI余额监控${{ matrix.suffix }}
           path: |
             dist/*.dmg
             dist/*.zip
