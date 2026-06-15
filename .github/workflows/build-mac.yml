@@ -20,6 +20,8 @@ jobs:
             arch: apple-silicon
             suffix: -mac-arm64
     runs-on: ${{ matrix.os }}
+    env:
+      MACOSX_DEPLOYMENT_TARGET: "12.0"
     
     steps:
       - name: Checkout
@@ -41,6 +43,7 @@ jobs:
             --noconfirm \
             --onedir \
             --windowed \
+            --osx-bundle-identifier "com.ulysis.aimonitor" \
             --name "AI余额监控" \
             --add-data "src:src" \
             --hidden-import PyQt5 \
