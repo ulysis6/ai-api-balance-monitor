@@ -13,9 +13,19 @@ if ! command -v python3 &> /dev/null; then
     exit 1
 fi
 
-# 检查并安装依赖
-echo "📦 检查依赖..."
-pip3 install --quiet pyinstaller PyQt5 requests 2>/dev/null || pip install --quiet pyinstaller PyQt5 requests
+# 创建虚拟环境
+VENV_DIR=".venv-build"
+if [ ! -d "$VENV_DIR" ]; then
+    echo "📦 创建虚拟环境..."
+    python3 -m venv "$VENV_DIR"
+fi
+
+source "$VENV_DIR/bin/activate"
+
+# 安装依赖
+echo "📦 安装依赖..."
+pip install --quiet --upgrade pip
+pip install --quiet pyinstaller PyQt5 requests
 
 # 清理旧构建
 echo "🧹 清理旧构建..."
@@ -23,7 +33,7 @@ rm -rf build dist
 
 # PyInstaller 打包
 echo "📦 PyInstaller 打包中..."
-python3 -m PyInstaller \
+python -m PyInstaller \
     --noconfirm \
     --onedir \
     --windowed \
@@ -42,7 +52,7 @@ cd dist
 if [ -d "run" ]; then mv "run" "AI余额监控"; fi
 if [ -f "run.app" ]; then mv "run.app" "AI余额监控.app"; elif [ -d "run.app" ]; then mv "run.app" "AI余额监控.app"; fi
 
-# Ad-hoc 签名（移除隔离属性）
+# Ad-hoc 签名
 echo "🔏 签名中..."
 codesign --force --deep --sign - "AI余额监控.app"
 xattr -cr "AI余额监控.app"
@@ -66,11 +76,16 @@ else
     zip -r "AI余额监控-mac.zip" "AI余额监控.app"
 fi
 
+# 清理虚拟环境
+deactivate
+cd ..
+rm -rf "$VENV_DIR"
+
 echo ""
 echo "✅ 打包完成！"
 echo ""
-ls -lh *.dmg *.zip 2>/dev/null
+ls -lh dist/*.dmg dist/*.zip 2>/dev/null
 echo ""
-echo "文件位置: $(pwd)"
+echo "文件位置: $(pwd)/dist/"
 echo ""
 echo "首次打开请右键 → 打开，或运行: xattr -cr /Applications/AI余额监控.app"
